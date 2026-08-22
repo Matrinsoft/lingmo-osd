@@ -19,7 +19,12 @@ build-debug *args:
 build-release *args: (build-debug '--release' args)
 
 # Compiles with vendored dependencies
-build-vendored *args: vendor-extract (build-release '--frozen --offline' args)
+build-vendored *args:
+    vendor-extract
+    cp Cargo.toml Cargo.toml.bak
+    sed -i '/^\[patch/,/^$/d' Cargo.toml
+    cargo build --release {{ args }} --frozen --offline
+    mv Cargo.toml.bak Cargo.toml
 
 # Build a debian package locally without a schroot or vendoring
 build-deb:
@@ -47,9 +52,8 @@ install:
 # Vendor Cargo dependencies locally
 vendor:
     mkdir -p .cargo
-    cargo vendor --locked | head -n -1 > .cargo/config.toml
-    echo 'directory = "vendor"' >> .cargo/config.toml
-    tar pcf vendor.tar vendor
+    cargo vendor --locked 2>/dev/null | awk '/^\[/{p=1} p' > .cargo/config.toml
+    tar pcf vendor.tar vendor .cargo/config.toml
     rm -rf vendor
 
 # Extracts vendored dependencies
