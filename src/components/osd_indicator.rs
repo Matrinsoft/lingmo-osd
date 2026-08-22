@@ -3,16 +3,16 @@
 
 use crate::components::app::DisplayMode;
 use crate::config;
-use cosmic::iced::platform_specific::shell::commands::layer_surface::{
+use lingmo::iced::platform_specific::shell::commands::layer_surface::{
     Anchor, KeyboardInteractivity, Layer, destroy_layer_surface,
 };
-use cosmic::iced::runtime::platform_specific::wayland::layer_surface::{
+use lingmo::iced::runtime::platform_specific::wayland::layer_surface::{
     IcedMargin, IcedOutput, SctkLayerSurfaceSettings,
 };
-use cosmic::iced::window::Id as SurfaceId;
-use cosmic::iced::{self, Alignment, Border, Length};
-use cosmic::surface::action::{LiveSettings, simple_layer_shell};
-use cosmic::{Apply, Element, Task, widget};
+use lingmo::iced::window::Id as SurfaceId;
+use lingmo::iced::{self, Alignment, Border, Length};
+use lingmo::surface::action::{LiveSettings, simple_layer_shell};
+use lingmo::{Apply, Element, Task, widget};
 use cosmic_comp_config::input::TouchpadOverride;
 use futures::future::{AbortHandle, Aborted, abortable};
 use std::sync::LazyLock;
@@ -137,7 +137,7 @@ fn close_timer(id: SurfaceId) -> (Task<Msg>, AbortHandle) {
         let duration = Duration::from_secs(3);
         tokio::time::sleep(duration).await;
     });
-    let command = cosmic::task::future(async move {
+    let command = lingmo::task::future(async move {
         match future.await {
             Ok(_) => Msg::Close(id),
             Err(Aborted) => Msg::Ignore,
@@ -153,7 +153,7 @@ fn display_identifier_timer(id: SurfaceId) -> (Task<Msg>, AbortHandle) {
         let duration = Duration::from_secs(1);
         tokio::time::sleep(duration).await;
     });
-    let command = cosmic::task::future(async move {
+    let command = lingmo::task::future(async move {
         match future.await {
             Ok(_) => Msg::Close(id),
             Err(Aborted) => Msg::Ignore,
@@ -167,7 +167,7 @@ impl State {
         id: SurfaceId,
         params: Params,
         margin: IcedMargin,
-    ) -> (Self, Task<cosmic::Action<crate::components::app::Msg>>) {
+    ) -> (Self, Task<lingmo::Action<crate::components::app::Msg>>) {
         Self::new_with_output(id, params, IcedOutput::Active, margin)
     }
 
@@ -176,7 +176,7 @@ impl State {
         params: Params,
         output: IcedOutput,
         margin: IcedMargin,
-    ) -> (Self, Task<cosmic::Action<crate::components::app::Msg>>) {
+    ) -> (Self, Task<lingmo::Action<crate::components::app::Msg>>) {
         let mut cmds = vec![];
 
         let is_display_number = matches!(params, Params::DisplayNumber(_));
@@ -201,7 +201,7 @@ impl State {
             margin
         };
 
-        cmds.push(cosmic::surface::surface_task(simple_layer_shell(
+        cmds.push(lingmo::surface::surface_task(simple_layer_shell(
             || LiveSettings::default(),
             move || SctkLayerSurfaceSettings {
                 id,
@@ -216,7 +216,7 @@ impl State {
                 input_zone: Some(Vec::new()),
                 ..Default::default()
             },
-            None::<fn() -> Element<'static, cosmic::Action<Msg>>>,
+            None::<fn() -> Element<'static, lingmo::Action<Msg>>>,
         )));
 
         // Display numbers auto-close after 1 second, other OSDs after 3 seconds
@@ -224,11 +224,11 @@ impl State {
             let (cmd, timer_abort) = display_identifier_timer(id);
             cmds.push(cmd.map(move |x| {
                 if is_display_number {
-                    cosmic::action::app(crate::components::app::Msg::DisplayIdentifierSurface((
+                    lingmo::action::app(crate::components::app::Msg::DisplayIdentifierSurface((
                         id, x,
                     )))
                 } else {
-                    cosmic::Action::App(crate::components::app::Msg::OsdIndicator(x))
+                    lingmo::Action::App(crate::components::app::Msg::OsdIndicator(x))
                 }
             }));
             timer_abort
@@ -236,11 +236,11 @@ impl State {
             let (cmd, timer_abort) = close_timer(id);
             cmds.push(cmd.map(move |x| {
                 if is_display_number {
-                    cosmic::action::app(crate::components::app::Msg::DisplayIdentifierSurface((
+                    lingmo::action::app(crate::components::app::Msg::DisplayIdentifierSurface((
                         id, x,
                     )))
                 } else {
-                    cosmic::Action::App(crate::components::app::Msg::OsdIndicator(x))
+                    lingmo::Action::App(crate::components::app::Msg::OsdIndicator(x))
                 }
             }));
             timer_abort
@@ -318,7 +318,7 @@ impl State {
         let radius;
 
         let osd_contents = if let Some(value) = self.params.value() {
-            radius = cosmic::theme::active().cosmic().radius_l();
+            radius = lingmo::theme::active().cosmic().radius_l();
             let max_value = self.max_value();
             let progress = value as f32 / max_value;
 
@@ -343,15 +343,15 @@ impl State {
             .width(Length::Fixed(392.0))
             .height(Length::Fixed(52.0))
         } else {
-            radius = cosmic::theme::active().cosmic().radius_m();
+            radius = lingmo::theme::active().cosmic().radius_m();
             const ICON_SIZE: u16 = 112;
             widget::container(icon.size(ICON_SIZE))
-                .width(ICON_SIZE + 2 * cosmic::theme::active().cosmic().space_l())
-                .height(ICON_SIZE + 2 * cosmic::theme::active().cosmic().space_s())
+                .width(ICON_SIZE + 2 * lingmo::theme::active().cosmic().space_l())
+                .height(ICON_SIZE + 2 * lingmo::theme::active().cosmic().space_s())
         }
         .align_x(Alignment::Center)
         .align_y(Alignment::Center)
-        .class(cosmic::theme::Container::custom(move |theme| {
+        .class(lingmo::theme::Container::custom(move |theme| {
             widget::container::Style {
                 text_color: Some(theme.cosmic().background(theme.transparent).on.into()),
                 background: Some(
@@ -384,13 +384,13 @@ impl State {
         const CONTAINER_BASE_SIZE: u16 = 27;
         const TEXT_SIZE: u16 = 45;
 
-        let theme = cosmic::theme::active();
+        let theme = lingmo::theme::active();
         let cosmic_theme = theme.cosmic();
 
         let number_text = widget::text::title1(format!("{}", display_number))
             .size(TEXT_SIZE)
-            .line_height(cosmic::iced::widget::text::LineHeight::Absolute(
-                cosmic::iced::Pixels(TEXT_SIZE as f32),
+            .line_height(lingmo::iced::widget::text::LineHeight::Absolute(
+                lingmo::iced::Pixels(TEXT_SIZE as f32),
             ))
             .width(Length::Shrink)
             .align_x(Alignment::Center)
@@ -404,7 +404,7 @@ impl State {
         let container = widget::container(content)
             .padding(padding)
             .center(Length::Fixed(square_size))
-            .class(cosmic::theme::Container::custom(move |theme| {
+            .class(lingmo::theme::Container::custom(move |theme| {
                 widget::container::Style {
                     text_color: Some(iced::Color::from(theme.cosmic().on_accent_color())),
                     background: Some(iced::Color::from(theme.cosmic().accent_color()).into()),

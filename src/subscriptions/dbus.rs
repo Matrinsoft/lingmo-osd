@@ -1,6 +1,6 @@
 // TODO: Handle loss of connection, name?
 
-use cosmic::iced;
+use lingmo::iced;
 use futures::stream;
 
 static NAME: &str = "com.system76.CosmicOsd";

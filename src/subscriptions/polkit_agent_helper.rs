@@ -1,4 +1,4 @@
-use cosmic::iced::{self, Subscription};
+use lingmo::iced::{self, Subscription};
 use futures::SinkExt;
 use std::ops::ControlFlow;
 use std::path::Path;

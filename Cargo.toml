@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "cosmic-osd"
 version = "0.1.0"
 edition = "2024"
@@ -14,9 +14,9 @@ i18n-embed = { version = "0.16", features = [
     "desktop-requester",
 ] }
 i18n-embed-fl = "0.10"
-cosmic-config = { git = "https://github.com/Matrinsoft/libcosmic" }
+cosmic-config = { git = "https://github.com/Matrinsoft/liblingmo" }
 cosmic-comp-config = { git = "https://github.com/Matrinsoft/lingmo-comp" }
-libcosmic = { git = "https://github.com/Matrinsoft/libcosmic", default-features = false, features = [
+liblingmo = { git = "https://github.com/Matrinsoft/liblingmo", default-features = false, features = [
     "autosize",
     "dbus-config",
     "desktop-systemd-scope",
@@ -52,15 +52,15 @@ git = "https://github.com/Matrinsoft/lingmo-settings"
 [dependencies.cosmic-settings-daemon-subscription]
 git = "https://github.com/Matrinsoft/lingmo-settings"
 
-[patch.'https://github.com/Matrinsoft/libcosmic']
-# libcosmic = { path = "../libcosmic" }
+[patch.'https://github.com/Matrinsoft/liblingmo']
+# liblingmo = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 # iced_futures = { path = "../libcosmic/iced/futures" }
-# iced_futures = { git = "https://github.com/Matrinsoft/libcosmic//", branch = "theme-v2" }
-# libcosmic = { git = "https://github.com/Matrinsoft/libcosmic//", branch = "theme-v2" }
-# cosmic-config = { git = "https://github.com/Matrinsoft/libcosmic//", branch = "theme-v2" }
-# cosmic-theme = { git = "https://github.com/Matrinsoft/libcosmic//", branch = "theme-v2" }
+# iced_futures = { git = "https://github.com/Matrinsoft/liblingmo//", branch = "theme-v2" }
+# liblingmo = { git = "https://github.com/Matrinsoft/liblingmo//", branch = "theme-v2" }
+# cosmic-config = { git = "https://github.com/Matrinsoft/liblingmo//", branch = "theme-v2" }
+# cosmic-theme = { git = "https://github.com/Matrinsoft/liblingmo//", branch = "theme-v2" }
 
 [profile.release]
 lto = "thin"
