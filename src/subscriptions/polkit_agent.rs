@@ -1,7 +1,7 @@
 // TODO: only open one dialog at a time?
 
-use lingmo::iced::Subscription;
-use lingmo::iced::futures::FutureExt;
+use cosmic::iced::Subscription;
+use cosmic::iced::futures::FutureExt;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::{Arc, Mutex};

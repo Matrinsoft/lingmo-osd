@@ -5,15 +5,15 @@
 use crate::fl;
 use crate::subscriptions::polkit_agent::PolkitError;
 use crate::subscriptions::polkit_agent_helper;
-use lingmo::iced::event::{PlatformSpecific, wayland};
-use lingmo::iced::platform_specific::shell::commands::layer_surface::{
+use cosmic::iced::event::{PlatformSpecific, wayland};
+use cosmic::iced::platform_specific::shell::commands::layer_surface::{
     KeyboardInteractivity, Layer, destroy_layer_surface,
 };
-use lingmo::iced::runtime::platform_specific::wayland::layer_surface::SctkLayerSurfaceSettings;
-use lingmo::iced::window::Id as SurfaceId;
-use lingmo::iced::{self, Subscription, Task};
-use lingmo::surface::action::{LiveSettings, simple_layer_shell};
-use lingmo::{Element, widget};
+use cosmic::iced::runtime::platform_specific::wayland::layer_surface::SctkLayerSurfaceSettings;
+use cosmic::iced::window::Id as SurfaceId;
+use cosmic::iced::{self, Subscription, Task};
+use cosmic::surface::action::{LiveSettings, simple_layer_shell};
+use cosmic::{Element, widget};
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
 use tokio::sync::oneshot;
@@ -67,9 +67,9 @@ impl State {
     pub fn new<T: Send + Sync + 'static>(
         id: SurfaceId,
         params: Params,
-    ) -> (Self, Task<lingmo::Action<T>>) {
+    ) -> (Self, Task<cosmic::Action<T>>) {
         let text_input_id = iced::id::Id::unique();
-        let cmd = lingmo::surface::surface_task(simple_layer_shell(
+        let cmd = cosmic::surface::surface_task(simple_layer_shell(
             || LiveSettings::default(),
             move || SctkLayerSurfaceSettings {
                 id,
@@ -79,7 +79,7 @@ impl State {
                 size: None,
                 ..Default::default()
             },
-            None::<fn() -> Element<'static, lingmo::Action<Msg>>>,
+            None::<fn() -> Element<'static, cosmic::Action<Msg>>>,
         ));
         (
             Self {
@@ -186,7 +186,7 @@ impl State {
         (Some(self), Task::none())
     }
 
-    pub fn view(&self) -> lingmo::Element<'_, Msg> {
+    pub fn view(&self) -> cosmic::Element<'_, Msg> {
         // TODO Allocates on every keypress?
 
         let placeholder = self.password_label.trim_end_matches(':');
@@ -212,11 +212,11 @@ impl State {
                 authenticate_button = authenticate_button.on_press(Msg::Authenticate);
             }
         }
-        let mut right_column: Vec<lingmo::Element<_>> = vec![password_input.into()];
+        let mut right_column: Vec<cosmic::Element<_>> = vec![password_input.into()];
         if self.retries > 0 {
             right_column.push(
                 widget::text::body(&self.msg_invalid_password)
-                    .class(lingmo::theme::Text::Color(iced::Color::from_rgb(
+                    .class(cosmic::theme::Text::Color(iced::Color::from_rgb(
                         1.0, 0.0, 0.0,
                     )))
                     .into(),

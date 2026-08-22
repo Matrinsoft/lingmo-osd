@@ -5,31 +5,31 @@ use crate::fl;
 use crate::session_manager::SessionManagerProxy;
 use crate::subscriptions::{dbus, polkit_agent};
 use clap::Parser;
-use lingmo::app::{CosmicFlags, Task};
-use lingmo::cctk::sctk::shell::wlr_layer;
-use lingmo::core::AppType;
-use lingmo::dbus_activation::Details;
-use lingmo::iced::event::wayland::{self, LayerEvent, OutputEvent, OverlapNotifyEvent};
-use lingmo::iced::event::{self, listen_with};
-use lingmo::iced::keyboard::Key;
-use lingmo::iced::keyboard::key::Named;
-use lingmo::iced::platform_specific::shell::commands::activation::request_token;
-use lingmo::iced::platform_specific::shell::commands::corner_radius::corner_radius;
-use lingmo::iced::platform_specific::shell::commands::layer_surface::{
+use cosmic::app::{CosmicFlags, Task};
+use cosmic::cctk::sctk::shell::wlr_layer;
+use cosmic::core::AppType;
+use cosmic::dbus_activation::Details;
+use cosmic::iced::event::wayland::{self, LayerEvent, OutputEvent, OverlapNotifyEvent};
+use cosmic::iced::event::{self, listen_with};
+use cosmic::iced::keyboard::Key;
+use cosmic::iced::keyboard::key::Named;
+use cosmic::iced::platform_specific::shell::commands::activation::request_token;
+use cosmic::iced::platform_specific::shell::commands::corner_radius::corner_radius;
+use cosmic::iced::platform_specific::shell::commands::layer_surface::{
     Anchor, KeyboardInteractivity, destroy_layer_surface, set_margin,
 };
-use lingmo::iced::platform_specific::shell::commands::overlap_notify::overlap_notify;
-use lingmo::iced::runtime::platform_specific::wayland::CornerRadius;
-use lingmo::iced::runtime::platform_specific::wayland::layer_surface::{
+use cosmic::iced::platform_specific::shell::commands::overlap_notify::overlap_notify;
+use cosmic::iced::runtime::platform_specific::wayland::CornerRadius;
+use cosmic::iced::runtime::platform_specific::wayland::layer_surface::{
     IcedMargin, IcedOutput, SctkLayerSurfaceSettings,
 };
-use lingmo::iced::runtime::{Action, platform_specific, task};
-use lingmo::iced::widget::operation::focus;
-use lingmo::iced::window::{self, Id as SurfaceId};
-use lingmo::iced::{self, Alignment, Length, Limits, Point, Rectangle, Size, Subscription, time};
-use lingmo::surface::action::{LiveSettings, simple_layer_shell};
-use lingmo::widget::{self, autosize, button, container, icon, text};
-use lingmo::{Apply, Element, theme};
+use cosmic::iced::runtime::{Action, platform_specific, task};
+use cosmic::iced::widget::operation::focus;
+use cosmic::iced::window::{self, Id as SurfaceId};
+use cosmic::iced::{self, Alignment, Length, Limits, Point, Rectangle, Size, Subscription, time};
+use cosmic::surface::action::{LiveSettings, simple_layer_shell};
+use cosmic::widget::{self, autosize, button, container, icon, text};
+use cosmic::{Apply, Element, theme};
 use cosmic_comp_config::input::TouchpadOverride;
 use cosmic_settings_airplane_mode_subscription as airplane_mode;
 use cosmic_settings_audio_client::{self as audio_client, CosmicAudioProxy};
@@ -50,7 +50,7 @@ use std::time::{Duration, Instant};
 use zbus::Connection;
 
 // Type alias for Wayland output. Matches what's used in SctkLayerSurfaceSettings
-type WlOutput = lingmo::cctk::sctk::reexports::client::protocol::wl_output::WlOutput;
+type WlOutput = cosmic::cctk::sctk::reexports::client::protocol::wl_output::WlOutput;
 
 const COUNTDOWN_LENGTH: u8 = 60;
 static CONFIRM_ID: LazyLock<iced::id::Id> = LazyLock::new(|| iced::id::Id::new("confirm-id"));
@@ -94,12 +94,12 @@ pub enum OsdTask {
 
 impl OsdTask {
     fn perform(self) -> Task<Msg> {
-        let msg = |m| lingmo::action::app(Msg::Zbus(m));
+        let msg = |m| cosmic::action::app(Msg::Zbus(m));
         match self {
-            OsdTask::EnterBios => lingmo::task::future(restart(true)).map(msg),
-            OsdTask::LogOut => lingmo::task::future(log_out()).map(msg),
-            OsdTask::Restart => lingmo::task::future(restart(false)).map(msg),
-            OsdTask::Shutdown => lingmo::task::future(shutdown()).map(msg),
+            OsdTask::EnterBios => cosmic::task::future(restart(true)).map(msg),
+            OsdTask::LogOut => cosmic::task::future(log_out()).map(msg),
+            OsdTask::Restart => cosmic::task::future(restart(false)).map(msg),
+            OsdTask::Shutdown => cosmic::task::future(shutdown()).map(msg),
             OsdTask::ConfirmHeadphones {
                 device,
                 selected_headset,
@@ -221,7 +221,7 @@ enum Surface {
 }
 
 pub(crate) struct App {
-    core: lingmo::app::Core,
+    core: cosmic::app::Core,
     connection: Option<zbus::Connection>,
     system_connection: Option<zbus::Connection>,
     surfaces: HashMap<SurfaceId, Surface>,
@@ -249,7 +249,7 @@ impl App {
         let id = window::Id::unique();
         self.dummy_id = Some(id);
         Task::batch(vec![
-            lingmo::surface::surface_task(simple_layer_shell::<Msg>(
+            cosmic::surface::surface_task(simple_layer_shell::<Msg>(
                 || LiveSettings {
                     padding: Some(IcedMargin::default()),
                     corners: Some(CornerRadius::default()),
@@ -263,7 +263,7 @@ impl App {
                         input_zone: Some(Vec::new()),
                         anchor: wlr_layer::Anchor::BOTTOM,
                         output:
-                            lingmo::iced::runtime::platform_specific::wayland::layer_surface::IcedOutput::Active,
+                            cosmic::iced::runtime::platform_specific::wayland::layer_surface::IcedOutput::Active,
                         namespace: "cosmic_launcher_dummy".into(),
                         margin: IcedMargin::default(),
                         size: Some((Some(600), Some(200))),
@@ -271,24 +271,24 @@ impl App {
                         size_limits: Limits::NONE,
                     }
                 },
-                None::<fn() -> Element<'static, lingmo::Action<Msg>>>,
+                None::<fn() -> Element<'static, cosmic::Action<Msg>>>,
             )),
             self.handle_overlap(),
         ])
     }
 
-    fn create_indicator(&mut self, params: osd_indicator::Params) -> lingmo::app::Task<Msg> {
+    fn create_indicator(&mut self, params: osd_indicator::Params) -> cosmic::app::Task<Msg> {
         if let Some((_id, state)) = &mut self.indicator {
             state
                 .replace_params(params)
-                .map(|x| lingmo::Action::App(Msg::OsdIndicator(x)))
+                .map(|x| cosmic::Action::App(Msg::OsdIndicator(x)))
         } else {
             let mut cmds = Vec::new();
             let id = SurfaceId::unique();
             let (state, cmd) = osd_indicator::State::new(id, params, self.margin);
 
             if let Some(old) = self.indicator.replace((id, state)) {
-                cmds.push(destroy_layer_surface(old.0).map(lingmo::Action::App));
+                cmds.push(destroy_layer_surface(old.0).map(cosmic::Action::App));
             }
             cmds.push(cmd);
 
@@ -390,7 +390,7 @@ impl App {
             if self.core.system_theme().cosmic().frosted_system_interface {
                 task::effect(Action::PlatformSpecific(
                     platform_specific::Action::Wayland(
-                        lingmo::iced::runtime::platform_specific::wayland::Action::BlurSurface(
+                        cosmic::iced::runtime::platform_specific::wayland::Action::BlurSurface(
                             *id,
                             Some(vec![Rectangle {
                                 x: 0.,
@@ -404,7 +404,7 @@ impl App {
             } else {
                 task::effect(Action::PlatformSpecific(
                     platform_specific::Action::Wayland(
-                        lingmo::iced::runtime::platform_specific::wayland::Action::BlurSurface(
+                        cosmic::iced::runtime::platform_specific::wayland::Action::BlurSurface(
                             *id, None,
                         ),
                     ),
@@ -456,8 +456,8 @@ impl App {
         Task::batch(cmds)
     }
 
-    fn trigger_identify_displays(&self) -> lingmo::app::Task<Msg> {
-        lingmo::task::future(async move {
+    fn trigger_identify_displays(&self) -> cosmic::app::Task<Msg> {
+        cosmic::task::future(async move {
             // Add a small delay to allow cosmic-randr to sync with display changes
             tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
@@ -500,17 +500,17 @@ impl App {
 
             Msg::CreateDisplayIdentifiers(displays)
         })
-        .map(lingmo::Action::App)
+        .map(cosmic::Action::App)
     }
 }
 
-impl lingmo::Application for App {
+impl cosmic::Application for App {
     type Message = Msg;
     type Executor = iced::executor::Default;
     type Flags = Args;
     const APP_ID: &'static str = "com.system76.CosmicOnScreenDisplay";
 
-    fn init(mut core: lingmo::app::Core, _flags: Args) -> (Self, lingmo::app::Task<Msg>) {
+    fn init(mut core: cosmic::app::Core, _flags: Args) -> (Self, cosmic::app::Task<Msg>) {
         core.set_app_type(AppType::System);
         let mut app = Self {
             core,
@@ -539,11 +539,11 @@ impl lingmo::Application for App {
         (app, t)
     }
 
-    fn core(&self) -> &lingmo::app::Core {
+    fn core(&self) -> &cosmic::app::Core {
         &self.core
     }
 
-    fn core_mut(&mut self) -> &mut lingmo::app::Core {
+    fn core_mut(&mut self) -> &mut cosmic::app::Core {
         &mut self.core
     }
 
@@ -556,7 +556,7 @@ impl lingmo::Application for App {
                     self.identifiers_dismissed = false;
                     self.trigger_identify_displays()
                 } else if matches!(action, OsdTask::DismissDisplayIdentifiers) {
-                    Task::done(lingmo::Action::App(Msg::DismissDisplayIdentifiers))
+                    Task::done(cosmic::Action::App(Msg::DismissDisplayIdentifiers))
                 } else if matches!(action, OsdTask::Restart)
                     && matches!(self.action_to_confirm, Some((_, OsdTask::Shutdown, _)))
                 {
@@ -564,7 +564,7 @@ impl lingmo::Application for App {
                 } else {
                     let id = SurfaceId::unique();
                     self.action_to_confirm = Some((id, action, COUNTDOWN_LENGTH));
-                    lingmo::surface::surface_task(simple_layer_shell(
+                    cosmic::surface::surface_task(simple_layer_shell(
                         || LiveSettings::default(),
                         move || SctkLayerSurfaceSettings {
                             id,
@@ -575,7 +575,7 @@ impl lingmo::Application for App {
                             size_limits: Limits::NONE.min_width(1.0).min_height(1.0),
                             ..Default::default()
                         },
-                        None::<fn() -> Element<'static, lingmo::Action<Msg>>>,
+                        None::<fn() -> Element<'static, cosmic::Action<Msg>>>,
                     ))
                 }
             }
@@ -651,7 +651,7 @@ impl lingmo::Application for App {
                     if let Some(state) = state {
                         self.surfaces.insert(id, Surface::PolkitDialog(state));
                     }
-                    return cmd.map(move |msg| lingmo::action::app(Msg::PolkitDialog((id, msg))));
+                    return cmd.map(move |msg| cosmic::action::app(Msg::PolkitDialog((id, msg))));
                 }
                 Task::none()
             }
@@ -665,7 +665,7 @@ impl lingmo::Application for App {
                         log::debug!("Display identifier surface {:?} closed", id);
                     }
                     return cmd.map(move |msg| {
-                        lingmo::action::app(Msg::DisplayIdentifierSurface((id, msg)))
+                        cosmic::action::app(Msg::DisplayIdentifierSurface((id, msg)))
                     });
                 }
                 Task::none()
@@ -676,7 +676,7 @@ impl lingmo::Application for App {
                     if let Some(state) = state {
                         self.indicator = Some((id, state));
                     }
-                    cmd.map(|x| lingmo::action::app(Msg::OsdIndicator(x)))
+                    cmd.map(|x| cosmic::action::app(Msg::OsdIndicator(x)))
                 } else {
                     Task::none()
                 }
@@ -817,14 +817,14 @@ impl lingmo::Application for App {
                     envs.push(("DESKTOP_STARTUP_ID".to_string(), token));
                 }
                 Task::perform(
-                    lingmo::desktop::spawn_desktop_exec("cosmic-settings sound", envs, None, false),
-                    |()| lingmo::action::app(Msg::Cancel),
+                    cosmic::desktop::spawn_desktop_exec("cosmic-settings sound", envs, None, false),
+                    |()| cosmic::action::app(Msg::Cancel),
                 )
             }
             Msg::SoundSettings => {
                 if let Some(id) = self.action_to_confirm.as_ref().map(|a| a.0) {
                     request_token(Some(String::from(Self::APP_ID)), Some(id))
-                        .map(move |token| lingmo::Action::App(Msg::ActivationToken(token)))
+                        .map(move |token| cosmic::Action::App(Msg::ActivationToken(token)))
                 } else {
                     log::error!("Failed ot spawn cosmic-settings.");
                     Task::none()
@@ -902,7 +902,7 @@ impl lingmo::Application for App {
                         name
                     );
                     // Trigger display identifier OSD to show the updated numbering
-                    Task::done(lingmo::Action::App(Msg::Action(OsdTask::IdentifyDisplays)))
+                    Task::done(cosmic::Action::App(Msg::Action(OsdTask::IdentifyDisplays)))
                 } else {
                     log::warn!(
                         "OutputRemoved event received but display not found in wayland_outputs"
@@ -965,7 +965,7 @@ impl lingmo::Application for App {
                                 display_number
                             );
                             kept_ids.insert(*existing_id);
-                            tasks.push(Task::done(lingmo::Action::App(
+                            tasks.push(Task::done(cosmic::Action::App(
                                 Msg::ResetDisplayIdentifierTimer(*existing_id),
                             )));
                         } else {
@@ -1067,7 +1067,7 @@ impl lingmo::Application for App {
             Msg::ResetDisplayIdentifierTimer(id) => {
                 if let Some(Surface::OsdIndicator(state)) = self.surfaces.get_mut(&id) {
                     return state.reset_display_identifier_timer().map(move |msg| {
-                        lingmo::action::app(Msg::DisplayIdentifierSurface((id, msg)))
+                        cosmic::action::app(Msg::DisplayIdentifierSurface((id, msg)))
                     });
                 }
                 Task::none()
@@ -1190,7 +1190,7 @@ impl lingmo::Application for App {
                     _ => None,
                 }
             }
-            lingmo::iced::Event::Keyboard(iced::keyboard::Event::KeyPressed {
+            cosmic::iced::Event::Keyboard(iced::keyboard::Event::KeyPressed {
                 key: Key::Named(Named::Escape),
                 text: _,
                 modifiers: _,
@@ -1216,11 +1216,11 @@ impl lingmo::Application for App {
         iced::Subscription::batch(subscriptions)
     }
 
-    fn view(&self) -> lingmo::prelude::Element<'_, Self::Message> {
+    fn view(&self) -> cosmic::prelude::Element<'_, Self::Message> {
         unreachable!()
     }
 
-    fn view_window(&self, id: SurfaceId) -> lingmo::Element<'_, Msg> {
+    fn view_window(&self, id: SurfaceId) -> cosmic::Element<'_, Msg> {
         if let Some(surface) = self.surfaces.get(&id) {
             return match surface {
                 Surface::PolkitDialog(state) => {
@@ -1298,7 +1298,7 @@ impl lingmo::Application for App {
                                     .padding(t.space_m()),
                                     None,
                                 )
-                                .class(lingmo::theme::style::Button::Image)
+                                .class(cosmic::theme::style::Button::Image)
                                 .selected(matches!(
                                     self.action_to_confirm,
                                     Some((_, OsdTask::ConfirmHeadphones {
@@ -1321,7 +1321,7 @@ impl lingmo::Application for App {
                                     .padding(t.space_m()),
                                     None,
                                 )
-                                .class(lingmo::theme::style::Button::Image)
+                                .class(cosmic::theme::style::Button::Image)
                                 .selected(matches!(
                                     self.action_to_confirm,
                                     Some((_, OsdTask::ConfirmHeadphones {
@@ -1377,7 +1377,7 @@ impl lingmo::Application for App {
         iced::widget::text("").into() // XXX
     }
 
-    fn dbus_activation(&mut self, msg: lingmo::dbus_activation::Message) -> Task<Msg> {
+    fn dbus_activation(&mut self, msg: cosmic::dbus_activation::Message) -> Task<Msg> {
         match msg.msg {
             Details::Activate => {}
             Details::ActivateAction { action, .. } => {
@@ -1385,7 +1385,7 @@ impl lingmo::Application for App {
                     return Task::none();
                 };
                 if let OsdTask::Touchpad = cmd {
-                    return lingmo::task::future(async move {
+                    return cosmic::task::future(async move {
                         use cosmic_config::{ConfigGet, ConfigSet};
 
                         let (tx, rx) = tokio::sync::oneshot::channel();
@@ -1417,9 +1417,9 @@ impl lingmo::Application for App {
                         });
                         Msg::TouchpadEnabled(rx.await.ok())
                     })
-                    .map(lingmo::Action::App);
+                    .map(cosmic::Action::App);
                 } else if let OsdTask::Display = cmd {
-                    return lingmo::task::future(async move {
+                    return cosmic::task::future(async move {
                         let enabled;
 
                         let Ok(mut output_lists) = cosmic_randr_shell::list().await else {
@@ -1547,7 +1547,7 @@ impl lingmo::Application for App {
                     self.identifiers_dismissed = false;
                     return self.trigger_identify_displays();
                 } else if let OsdTask::DismissDisplayIdentifiers = cmd {
-                    return Task::done(lingmo::Action::App(Msg::DismissDisplayIdentifiers));
+                    return Task::done(cosmic::Action::App(Msg::DismissDisplayIdentifiers));
                 }
 
                 if let Some(prev) = self.action_to_confirm.take() {
@@ -1555,7 +1555,7 @@ impl lingmo::Application for App {
                 } else {
                     let id = SurfaceId::unique();
                     self.action_to_confirm = Some((id, cmd, COUNTDOWN_LENGTH));
-                    return lingmo::surface::surface_task(simple_layer_shell(
+                    return cosmic::surface::surface_task(simple_layer_shell(
                         || LiveSettings::default(),
                         move || SctkLayerSurfaceSettings {
                             id,
@@ -1566,7 +1566,7 @@ impl lingmo::Application for App {
                             size_limits: Limits::NONE.min_width(1.0).min_height(1.0),
                             ..Default::default()
                         },
-                        None::<fn() -> Element<'static, lingmo::Action<Msg>>>,
+                        None::<fn() -> Element<'static, cosmic::Action<Msg>>>,
                     ));
                 }
             }
@@ -1579,8 +1579,8 @@ impl lingmo::Application for App {
 pub fn main() -> iced::Result {
     let args = Args::parse();
 
-    lingmo::app::run_single_instance::<App>(
-        lingmo::app::Settings::default()
+    cosmic::app::run_single_instance::<App>(
+        cosmic::app::Settings::default()
             .no_main_window(true)
             .exit_on_close(false),
         args,
@@ -1621,8 +1621,8 @@ fn min_width_and_height(
     e: Element<Msg>,
     width: impl Into<Length>,
     height: impl Into<Length>,
-) -> widget::Column<Msg, lingmo::Theme> {
-    use lingmo::widget::{column, row, space};
+) -> widget::Column<Msg, cosmic::Theme> {
+    use cosmic::widget::{column, row, space};
     column![
         row![e, space::vertical().height(height)].align_y(Alignment::Center),
         space::horizontal().width(width)
