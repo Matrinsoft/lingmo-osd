@@ -1113,7 +1113,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-airplane-mode-subscription"
 version = "1.0.7"
-source = "git+https://github.com/Matrinsoft/lingmo-settings#eeba579eb8ba00b6d9a738235f8f9bb102a44db9"
+source = "git+https://github.com/Matrinsoft/lingmo-settings#a679febf55aa5f665447d37822f79e8925805a20"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1173,7 +1173,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-daemon-subscription"
 version = "1.0.7"
-source = "git+https://github.com/Matrinsoft/lingmo-settings#eeba579eb8ba00b6d9a738235f8f9bb102a44db9"
+source = "git+https://github.com/Matrinsoft/lingmo-settings#a679febf55aa5f665447d37822f79e8925805a20"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1186,7 +1186,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-upower-subscription"
 version = "1.0.7"
-source = "git+https://github.com/Matrinsoft/lingmo-settings#eeba579eb8ba00b6d9a738235f8f9bb102a44db9"
+source = "git+https://github.com/Matrinsoft/lingmo-settings#a679febf55aa5f665447d37822f79e8925805a20"
 dependencies = [
  "futures",
  "iced_futures",
