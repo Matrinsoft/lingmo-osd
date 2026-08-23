@@ -1005,7 +1005,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "1.0.0"
-source = "git+https://github.com/Matrinsoft/lingmo-comp#dd27e393e0d55959c85f37bbd3a6f2b36bc5922c"
+source = "git+https://github.com/Matrinsoft/lingmo-comp#0f32ecadbc6fa26ea0d0c112c958b6f2f97b1e83"
 dependencies = [
  "cosmic-config",
  "input",
