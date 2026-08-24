@@ -5,7 +5,7 @@ Maintainer: Lingmo OS Team <team@lingmo.org>
 Build-Depends: debhelper (>= 11),
   debhelper-compat (= 11),
   cargo,
-  cosmic-randr,
+  lingmo-randr,
   just,
   libinput-dev,
   libudev-dev,
@@ -21,4 +21,4 @@ Depends: ${misc:Depends},
   ${shlibs:Depends},
   pulseaudio-utils
 Provides: polkit-1-auth-agent
-Description: Cosmic OSD
+Description: Lingmo OSD
