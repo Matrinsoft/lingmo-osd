@@ -5,7 +5,6 @@ Maintainer: Lingmo OS Team <team@lingmo.org>
 Build-Depends: debhelper (>= 11),
   debhelper-compat (= 11),
   cargo,
-  lingmo-randr,
   just,
   libinput-dev,
   libudev-dev,
@@ -19,6 +18,7 @@ Package: lingmo-osd
 Architecture: amd64 arm64
 Depends: ${misc:Depends},
   ${shlibs:Depends},
+  lingmo-randr,
   pulseaudio-utils
 Provides: polkit-1-auth-agent
 Description: Lingmo OSD
